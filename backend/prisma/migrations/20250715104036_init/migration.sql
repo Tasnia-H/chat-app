@@ -6,6 +6,8 @@ CREATE TABLE "users" (
     "password" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "isOnline" BOOLEAN NOT NULL DEFAULT false,
+    "lastSeen" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -15,6 +17,7 @@ CREATE TABLE "messages" (
     "id" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
     "senderId" TEXT NOT NULL,
     "receiverId" TEXT NOT NULL,
 

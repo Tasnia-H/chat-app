@@ -25,6 +25,7 @@ model Message {
   id        String   @id @default(cuid())
   content   String
   createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)
 
   senderId   String
   receiverId String
