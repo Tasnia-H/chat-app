@@ -39,6 +39,7 @@ export default function ChatInterface() {
   const [socket, setSocket] = useState<SocketType | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
   const [showNotificationPrompt, setShowNotificationPrompt] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -119,6 +120,7 @@ export default function ChatInterface() {
   const selectUser = (selectedUser: User) => {
     setSelectedUser(selectedUser);
     setMessages([]);
+    setShowSidebar(false); // Close sidebar on mobile after selection
 
     if (socket) {
       socket.emit("get_messages", { otherUserId: selectedUser.id });
@@ -164,10 +166,10 @@ export default function ChatInterface() {
   }, [unreadCounts]);
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 relative">
       {/* Notification Permission Prompt */}
       {showNotificationPrompt && (
-        <div className="fixed top-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50">
+        <div className="fixed top-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
           <div className="flex items-center space-x-3">
             <div className="flex-1">
               <p className="text-sm font-medium">Enable notifications</p>
@@ -193,8 +195,20 @@ export default function ChatInterface() {
         </div>
       )}
 
+      {/* Mobile Sidebar Overlay */}
+      {showSidebar && (
+        <div
+          className="fixed inset-0 bg-gray-100 bg-opacity-50 z-40 md:hidden"
+          onClick={() => setShowSidebar(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-1/4 bg-white border-r border-gray-300">
+      <div
+        className={`${
+          showSidebar ? "translate-x-0" : "-translate-x-full"
+        } fixed inset-y-0 left-0 z-50 w-80 bg-white border-r border-gray-300 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:w-1/4`}
+      >
         <div className="p-4 border-b border-gray-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -205,17 +219,27 @@ export default function ChatInterface() {
                 </span>
               )}
             </div>
-            <button
-              onClick={logout}
-              className="text-sm text-gray-500 hover:text-gray-700"
-            >
-              Logout
-            </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={logout}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Logout
+              </button>
+              <button
+                onClick={() => setShowSidebar(false)}
+                className="md:hidden text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
           </div>
-          <p className="text-sm text-gray-600">Welcome, {user?.username}!</p>
+          <p className="text-sm text-gray-600 truncate">
+            Welcome, {user?.username}!
+          </p>
         </div>
 
-        <div className="overflow-y-auto">
+        <div className="overflow-y-auto h-full pb-20">
           {users && users.length > 0 ? (
             users.map((u) => (
               <div
@@ -226,21 +250,23 @@ export default function ChatInterface() {
                 onClick={() => selectUser(u)}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-gray-600 font-medium">
                         {u.username.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-medium text-gray-900 truncate">
                         {u.username}
                       </h3>
-                      <p className="text-sm text-gray-500">{u.email}</p>
+                      <p className="text-sm text-gray-500 truncate">
+                        {u.email}
+                      </p>
                     </div>
                   </div>
                   {unreadCounts[u.id] > 0 && (
-                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+                    <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center flex-shrink-0">
                       {unreadCounts[u.id]}
                     </span>
                   )}
@@ -256,23 +282,41 @@ export default function ChatInterface() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {selectedUser ? (
           <>
             {/* Chat Header */}
             <div className="bg-white border-b border-gray-300 p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setShowSidebar(true)}
+                    className="md:hidden text-gray-500 hover:text-gray-700 mr-2"
+                  >
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                      />
+                    </svg>
+                  </button>
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
                     <span className="text-gray-600 font-medium">
                       {selectedUser.username.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <div>
-                    <h2 className="font-medium text-gray-900">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="font-medium text-gray-900 truncate">
                       {selectedUser.username}
                     </h2>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 truncate">
                       {selectedUser.email}
                     </p>
                   </div>
@@ -297,13 +341,13 @@ export default function ChatInterface() {
                   }`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    className={`max-w-xs sm:max-w-md lg:max-w-lg xl:max-w-xl px-4 py-2 rounded-lg ${
                       message.sender.id === user?.id
                         ? "bg-blue-600 text-white"
                         : "bg-gray-200 text-gray-900"
                     }`}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    <p className="text-sm break-words">{message.content}</p>
                     <div className="flex items-center justify-between mt-1">
                       <p className="text-xs opacity-75">
                         {new Date(message.createdAt).toLocaleTimeString([], {
@@ -312,7 +356,7 @@ export default function ChatInterface() {
                         })}
                       </p>
                       {message.sender.id === user?.id && (
-                        <span className="text-xs opacity-75">
+                        <span className="text-xs opacity-75 ml-2">
                           {message.isRead ? "✓✓" : "✓"}
                         </span>
                       )}
@@ -328,7 +372,7 @@ export default function ChatInterface() {
               onSubmit={sendMessage}
               className="bg-white border-t border-gray-300 p-4"
             >
-              <div className="flex space-x-4">
+              <div className="flex space-x-2 sm:space-x-4">
                 <input
                   type="text"
                   value={newMessage}
@@ -339,7 +383,7 @@ export default function ChatInterface() {
                 <button
                   type="submit"
                   disabled={!newMessage.trim()}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Send
                 </button>
@@ -347,8 +391,28 @@ export default function ChatInterface() {
             </form>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center p-4">
             <div className="text-center">
+              {/* Mobile Hamburger Icon */}
+              <button
+                onClick={() => setShowSidebar(true)}
+                className="md:hidden mb-4 p-3 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors"
+                aria-label="Open conversations"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 Select a conversation
               </h3>

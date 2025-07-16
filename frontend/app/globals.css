@@ -24,3 +24,20 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Ensure proper touch scrolling on iOS */
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+  button, input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
