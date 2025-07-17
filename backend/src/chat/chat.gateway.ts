@@ -14,7 +14,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:3000', // Frontend URL
+    origin: 'https://calabfr.solar-ict.com', // Frontend URL
     credentials: true,
   },
 })

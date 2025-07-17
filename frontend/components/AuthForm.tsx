@@ -32,7 +32,7 @@ export default function AuthForm() {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "http://localhost:3001/auth/google";
+    window.location.href = "https://calabbk.solar-ict.com/auth/google";
   };
 
   return (

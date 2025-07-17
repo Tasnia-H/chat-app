@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch("http://localhost:3001/auth/login", {
+    const response = await fetch("https://calabbk.solar-ict.com/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,13 +71,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     username: string,
     password: string
   ) => {
-    const response = await fetch("http://localhost:3001/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, username, password }),
-    });
+    const response = await fetch(
+      "https://calabbk.solar-ict.com/auth/register",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, username, password }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Registration failed");

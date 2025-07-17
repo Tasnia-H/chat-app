@@ -47,7 +47,7 @@ export default function ChatInterface() {
     fetchUsers();
 
     // Initialize socket connection
-    const socketInstance = io("http://localhost:3001", {
+    const socketInstance = io("https://calabbk.solar-ict.com", {
       auth: { token },
     });
 
@@ -106,7 +106,7 @@ export default function ChatInterface() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch("http://localhost:3001/users", {
+      const response = await fetch("https://calabbk.solar-ict.com/users", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
