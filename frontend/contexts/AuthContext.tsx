@@ -12,6 +12,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  avatar?: string;
 }
 
 interface AuthContextType {
@@ -91,6 +92,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null);
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+  };
+
+  // Function to handle OAuth callback
+  const handleOAuthCallback = (token: string, user: User) => {
+    setToken(token);
+    setUser(user);
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
   };
 
   return (

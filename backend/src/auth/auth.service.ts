@@ -3,6 +3,13 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
+interface GoogleUser {
+  googleId: string;
+  email: string;
+  username: string;
+  avatar?: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -12,11 +19,60 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<any> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && user.password && await bcrypt.compare(password, user.password)) {
       const { password, ...result } = user;
       return result;
     }
     return null;
+  }
+
+  async validateGoogleUser(googleUser: GoogleUser): Promise<any> {
+    const { googleId, email, username, avatar } = googleUser;
+    
+    // Check if user exists by Google ID
+    let user = await this.prisma.user.findUnique({
+      where: { googleId },
+    });
+
+    if (!user) {
+      // Check if user exists by email
+      user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+
+      if (user) {
+        // Link Google account to existing user
+        user = await this.prisma.user.update({
+          where: { email },
+          data: {
+            googleId,
+            avatar,
+          },
+        });
+      } else {
+        // Create new user
+        let uniqueUsername = username;
+        let counter = 1;
+        
+        // Ensure username is unique
+        while (await this.prisma.user.findUnique({ where: { username: uniqueUsername } })) {
+          uniqueUsername = `${username}${counter}`;
+          counter++;
+        }
+
+        user = await this.prisma.user.create({
+          data: {
+            googleId,
+            email,
+            username: uniqueUsername,
+            avatar,
+          },
+        });
+      }
+    }
+
+    const { password, ...result } = user;
+    return result;
   }
 
   async login(user: any) {
@@ -27,6 +83,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
+        avatar: user.avatar,
       },
     };
   }

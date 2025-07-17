@@ -10,6 +10,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  avatar?: string;
 }
 
 interface Message {
@@ -166,7 +167,7 @@ export default function ChatInterface() {
   }, [unreadCounts]);
 
   return (
-    <div className="flex h-screen bg-gray-100 relative">
+    <div className="flex h-screen bg-gray-100 relative overflow-hidden">
       {/* Notification Permission Prompt */}
       {showNotificationPrompt && (
         <div className="fixed top-4 right-4 bg-blue-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
@@ -198,7 +199,7 @@ export default function ChatInterface() {
       {/* Mobile Sidebar Overlay */}
       {showSidebar && (
         <div
-          className="fixed inset-0 bg-gray-100 bg-opacity-50 z-40 md:hidden"
+          className="fixed inset-0 bg-gray-100 bg-opacity-75 z-40 md:hidden"
           onClick={() => setShowSidebar(false)}
         />
       )}
@@ -207,9 +208,9 @@ export default function ChatInterface() {
       <div
         className={`${
           showSidebar ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 left-0 z-50 w-80 bg-white border-r border-gray-300 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:w-1/4`}
+        } fixed inset-y-0 left-0 z-50 w-80 bg-white border-r border-gray-300 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:w-1/4 flex flex-col`}
       >
-        <div className="p-4 border-b border-gray-300">
+        <div className="p-4 border-b border-gray-300 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <h1 className="text-xl font-semibold">Messages</h1>
@@ -239,7 +240,7 @@ export default function ChatInterface() {
           </p>
         </div>
 
-        <div className="overflow-y-auto h-full pb-20">
+        <div className="flex-1 overflow-y-auto">
           {users && users.length > 0 ? (
             users.map((u) => (
               <div
@@ -251,10 +252,18 @@ export default function ChatInterface() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-gray-600 font-medium">
-                        {u.username.charAt(0).toUpperCase()}
-                      </span>
+                    <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {u.avatar ? (
+                        <img
+                          src={u.avatar}
+                          alt={u.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-gray-600 font-medium">
+                          {u.username.charAt(0).toUpperCase()}
+                        </span>
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="font-medium text-gray-900 truncate">
@@ -282,11 +291,11 @@ export default function ChatInterface() {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {selectedUser ? (
           <>
             {/* Chat Header */}
-            <div className="bg-white border-b border-gray-300 p-4">
+            <div className="bg-white border-b border-gray-300 p-4 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <button
@@ -307,10 +316,18 @@ export default function ChatInterface() {
                       />
                     </svg>
                   </button>
-                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-gray-600 font-medium">
-                      {selectedUser.username.charAt(0).toUpperCase()}
-                    </span>
+                  <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center overflow-hidden">
+                    {selectedUser.avatar ? (
+                      <img
+                        src={selectedUser.avatar}
+                        alt={selectedUser.username}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-600 font-medium">
+                        {selectedUser.username.charAt(0).toUpperCase()}
+                      </span>
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <h2 className="font-medium text-gray-900 truncate">
@@ -330,7 +347,7 @@ export default function ChatInterface() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -368,27 +385,26 @@ export default function ChatInterface() {
             </div>
 
             {/* Message Input */}
-            <form
-              onSubmit={sendMessage}
-              className="bg-white border-t border-gray-300 p-4"
-            >
-              <div className="flex space-x-2 sm:space-x-4">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <button
-                  type="submit"
-                  disabled={!newMessage.trim()}
-                  className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Send
-                </button>
-              </div>
-            </form>
+            <div className="bg-white border-t border-gray-300 p-4 flex-shrink-0">
+              <form onSubmit={sendMessage}>
+                <div className="flex space-x-2 sm:space-x-4">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!newMessage.trim()}
+                    className="bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Send
+                  </button>
+                </div>
+              </form>
+            </div>
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center p-4">
